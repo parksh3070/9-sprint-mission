@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="0-sprint-mission" target="17" />
+      <module name="0-sprint-mission.main" target="17" />
+      <module name="0-sprint-mission.test" target="17" />
+      <module name="discodeit" target="17" />
+      <module name="discodeit.main" target="17" />
+      <module name="discodeit.test" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
