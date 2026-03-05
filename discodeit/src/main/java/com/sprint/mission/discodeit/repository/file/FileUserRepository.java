@@ -4,9 +4,7 @@ import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.repository.UserRepository;
 
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.nio.file.*;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -15,86 +13,60 @@ public class FileUserRepository implements UserRepository {
     private final Path DIRECTORY;
     private final String EXTENSION = ".ser";
 
-    public FileUserRepository() {
-        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), "file-data-map", User.class.getSimpleName());
+    public FileUserRepository(String baseDirectory) {
+        this.DIRECTORY = Paths.get(System.getProperty("user.dir"), baseDirectory, User.class.getSimpleName());
         if (Files.notExists(DIRECTORY)) {
-            try {
-                Files.createDirectories(DIRECTORY);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
+            try { Files.createDirectories(DIRECTORY); }
+            catch (IOException e) { throw new RuntimeException(e); }
         }
     }
 
-    private Path resolvePath(UUID id) {
-        return DIRECTORY.resolve(id + EXTENSION);
-    }
+    private Path resolvePath(UUID id) { return DIRECTORY.resolve(id + EXTENSION); }
 
     @Override
     public User save(User user) {
         Path path = resolvePath(user.getId());
-        try (
-                FileOutputStream fos = new FileOutputStream(path.toFile());
-                ObjectOutputStream oos = new ObjectOutputStream(fos)
-        ) {
+        try (FileOutputStream fos = new FileOutputStream(path.toFile());
+             ObjectOutputStream oos = new ObjectOutputStream(fos)) {
             oos.writeObject(user);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        } catch (IOException e) { throw new RuntimeException(e); }
         return user;
     }
 
     @Override
     public Optional<User> findById(UUID id) {
-        User userNullable = null;
+        User value = null;
         Path path = resolvePath(id);
         if (Files.exists(path)) {
-            try (
-                    FileInputStream fis = new FileInputStream(path.toFile());
-                    ObjectInputStream ois = new ObjectInputStream(fis)
-            ) {
-                userNullable = (User) ois.readObject();
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            }
+            try (FileInputStream fis = new FileInputStream(path.toFile());
+                 ObjectInputStream ois = new ObjectInputStream(fis)) {
+                value = (User) ois.readObject();
+            } catch (IOException | ClassNotFoundException e) { throw new RuntimeException(e); }
         }
-        return Optional.ofNullable(userNullable);
+        return Optional.ofNullable(value);
     }
 
     @Override
     public List<User> findAll() {
         try {
             return Files.list(DIRECTORY)
-                    .filter(path -> path.toString().endsWith(EXTENSION))
-                    .map(path -> {
-                        try (
-                                FileInputStream fis = new FileInputStream(path.toFile());
-                                ObjectInputStream ois = new ObjectInputStream(fis)
-                        ) {
+                    .filter(p -> p.toString().endsWith(EXTENSION))
+                    .map(p -> {
+                        try (FileInputStream fis = new FileInputStream(p.toFile());
+                             ObjectInputStream ois = new ObjectInputStream(fis)) {
                             return (User) ois.readObject();
-                        } catch (IOException | ClassNotFoundException e) {
-                            throw new RuntimeException(e);
-                        }
+                        } catch (IOException | ClassNotFoundException e) { throw new RuntimeException(e); }
                     })
                     .toList();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        } catch (IOException e) { throw new RuntimeException(e); }
     }
 
     @Override
-    public boolean existsById(UUID id) {
-        Path path = resolvePath(id);
-        return Files.exists(path);
-    }
+    public boolean existsById(UUID id) { return Files.exists(resolvePath(id)); }
 
     @Override
     public void deleteById(UUID id) {
-        Path path = resolvePath(id);
-        try {
-            Files.delete(path);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        try { Files.deleteIfExists(resolvePath(id)); }
+        catch (IOException e) { throw new RuntimeException(e); }
     }
 }

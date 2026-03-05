@@ -13,3 +13,4 @@ public interface ChannelRepository {
     boolean existsById(UUID id);
     void deleteById(UUID id);
 }
+
