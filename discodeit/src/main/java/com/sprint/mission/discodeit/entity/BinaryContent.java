@@ -1,41 +1,36 @@
 package com.sprint.mission.discodeit.entity;
 
-
+import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "binary_contents")
 @Getter
-public class BinaryContent implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class BinaryContent extends BaseEntity {
 
-    private static final long serialVersionUID = 1L;
+    @Column(name = "file_name", nullable = false)
+    private String fileName;
 
-    private UUID id;
-    private Instant createdAt; // 파일 업로드 기록
-    private byte[] data;
-    private String filename;
+    @Column(nullable = false)
+    private Long size;
+
+    @Column(name = "content_type", nullable = false)
     private String contentType;
-    private UUID ownerUserId;
-    private UUID messageId;
 
-    public BinaryContent(byte[] data,
-                         String filename,
-                         String contentType,
-                         UUID ownerUserId,
-                         UUID messageId) {
-        this.id = UUID.randomUUID();// 고유식별자
-        this.createdAt = Instant.now();// 생성시간 = 현재시간
-        this.data = data;
-        this.filename = filename;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "message_id")
+    private Message message;
+
+    public BinaryContent(String fileName, Long size, String contentType) {
+        this.fileName = fileName;
+        this.size = size;
         this.contentType = contentType;
-        this.ownerUserId = ownerUserId;
-        this.messageId = messageId;
-
     }
 
-    public byte[] getBytes() {
-        return this.data;
+    public void assignMessage(Message message) {
+        this.message = message;
     }
-
 }

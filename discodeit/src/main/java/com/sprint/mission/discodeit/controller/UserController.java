@@ -1,61 +1,46 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.entity.User;
-import com.sprint.mission.discodeit.entity.UserStatus;
 import com.sprint.mission.discodeit.service.UserService;
-import com.sprint.mission.discodeit.service.UserStatusService;
-import com.sprint.mission.discodeit.service.dto.UserCreateRequest;
-import com.sprint.mission.discodeit.service.dto.UserUpdateRequest;
-import org.springframework.web.bind.annotation.*;
-
+import com.sprint.mission.discodeit.dto.UserCreateRequest;
+import com.sprint.mission.discodeit.dto.UserResponse;
+import com.sprint.mission.discodeit.dto.UserUpdateRequest;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
-    private final UserStatusService userStatusService;
 
-    public UserController(UserService userService, UserStatusService userStatusService) {
+    public UserController(UserService userService) {
         this.userService = userService;
-        this.userStatusService = userStatusService;
     }
 
-    @RequestMapping(method = RequestMethod.POST)
-    public User create(@RequestBody UserCreateRequest request) {
+    @PostMapping
+    public UserResponse create(@RequestBody UserCreateRequest request) {
         return userService.create(request);
     }
 
-    @RequestMapping(method = RequestMethod.GET)
-    public List<User> findAll() {
+    @GetMapping
+    public List<UserResponse> findAll() {
         return userService.findAll();
     }
 
-    @RequestMapping(value = "/{userId}", method = RequestMethod.PUT)
-    public User update(@PathVariable UUID userId,
-                       @RequestBody UserUpdateRequest request) {
-
-        UserUpdateRequest newRequest = new UserUpdateRequest(
-                userId,
-                request.getNewUsername(),
-                request.getNewEmail(),
-                request.getNewPassword(),
-                request.getProfileImageRequest()
-        );
-
-        return userService.update(newRequest);
+    @GetMapping("/{userId}")
+    public UserResponse find(@PathVariable UUID userId) {
+        return userService.find(userId);
     }
 
-    @RequestMapping(value = "/{userId}", method = RequestMethod.DELETE)
+    @PutMapping("/{userId}")
+    public UserResponse update(@PathVariable UUID userId,
+                               @RequestBody UserUpdateRequest request) {
+        return userService.update(userId, request);
+    }
+
+    @DeleteMapping("/{userId}")
     public void delete(@PathVariable UUID userId) {
         userService.delete(userId);
-    }
-
-    // ✅ 온라인 상태 업데이트 (토글 방식)
-    @RequestMapping(value = "/{userId}/online", method = RequestMethod.PATCH)
-    public UserStatus toggleOnline(@PathVariable UUID userId) {
-        return userStatusService.updateByUserId(userId);
     }
 }

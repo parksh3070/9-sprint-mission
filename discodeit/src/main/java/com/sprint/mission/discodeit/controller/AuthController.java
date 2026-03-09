@@ -2,7 +2,7 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.entity.User;
 import com.sprint.mission.discodeit.service.AuthService;
-import com.sprint.mission.discodeit.service.dto.LoginRequest;
+import com.sprint.mission.discodeit.dto.LoginRequest;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

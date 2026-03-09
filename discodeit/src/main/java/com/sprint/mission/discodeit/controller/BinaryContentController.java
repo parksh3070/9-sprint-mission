@@ -1,14 +1,14 @@
 package com.sprint.mission.discodeit.controller;
 
-import com.sprint.mission.discodeit.entity.BinaryContent;
 import com.sprint.mission.discodeit.service.BinaryContentService;
-import org.springframework.web.bind.annotation.*;
-
+import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/binary-contents")
+@RequestMapping("/api/binaryContents")
 public class BinaryContentController {
 
     private final BinaryContentService binaryContentService;
@@ -17,17 +17,18 @@ public class BinaryContentController {
         this.binaryContentService = binaryContentService;
     }
 
-    // 1) 바이너리 파일 1개 조회
-    // GET /api/binary-contents/{id}
-    @RequestMapping(value = "/{id}", method = RequestMethod.GET)
-    public BinaryContent findOne(@PathVariable UUID id) {
+    @GetMapping("/{id}")
+    public BinaryContentDto findOne(@PathVariable UUID id) {
         return binaryContentService.find(id);
     }
 
-    // 2) 바이너리 파일 여러 개 조회
-    // GET /api/binary-contents?ids=uuid1,uuid2,...
-    @RequestMapping(method = RequestMethod.GET)
-    public List<BinaryContent> findMany(@RequestParam List<UUID> ids) {
+    @GetMapping
+    public List<BinaryContentDto> findMany(@RequestParam List<UUID> ids) {
         return binaryContentService.findAllByIdIn(ids);
+    }
+
+    @GetMapping("/{binaryContentId}/download")
+    public ResponseEntity<?> download(@PathVariable UUID binaryContentId) {
+        return binaryContentService.download(binaryContentId);
     }
 }

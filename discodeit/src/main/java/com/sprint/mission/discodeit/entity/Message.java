@@ -1,60 +1,53 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-
-import java.io.Serializable;
-import java.time.Instant;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "messages")
 @Getter
-public class Message implements Serializable {
-    private static final long serialVersionUID = 1L;
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class Message extends BaseUpdatableEntity {
 
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
-
+    @Column(nullable = false, length = 2000)
     private String content;
-    private UUID channelId;
-    private UUID authorId;
 
-    // 첨부파일 id 목록
-    private List<UUID> attachmentIds;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "channel_id", nullable = false)
+    private Channel channel;
 
-    public Message(String content, UUID channelId, UUID authorId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "author_id", nullable = false)
+    private User author;
 
+    @OneToMany(mappedBy = "message", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BinaryContent> attachments = new ArrayList<>();
+
+    public Message(String content, Channel channel, User author) {
         this.content = content;
-        this.channelId = channelId;
-        this.authorId = authorId;
-
-        // null 방지: 기본은 빈 리스트
-        this.attachmentIds = new ArrayList<>();
-    }
-
-    // ✅ setter 대신: "첨부파일을 설정한다"는 도메인 행위 메서드
-    public void attachFiles(List<UUID> attachmentIds) {
-        if (attachmentIds == null) {
-            this.attachmentIds = new ArrayList<>();
-        } else {
-            this.attachmentIds = new ArrayList<>(attachmentIds);
-        }
-        this.updatedAt = Instant.now();
+        this.channel = channel;
+        this.author = author;
     }
 
     public void update(String newContent) {
-        boolean anyValueUpdated = false;
-
-        if (newContent != null && !newContent.equals(this.content)) {
+        if (newContent != null && !newContent.isBlank()) {
             this.content = newContent;
-            anyValueUpdated = true;
         }
+    }
 
-        if (anyValueUpdated) {
-            this.updatedAt = Instant.now();
-        }
+    public void addAttachment(BinaryContent file) {
+        attachments.add(file);
+        file.assignMessage(this);
     }
 }

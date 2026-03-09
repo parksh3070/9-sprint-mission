@@ -1,36 +1,45 @@
 package com.sprint.mission.discodeit.entity;
 
-import lombok.Getter;
-
-import java.io.Serializable;
-import java.time.Instant;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 import java.time.Duration;
+import java.time.Instant;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
+@Entity
+@Table(name = "user_status")
 @Getter
-public class UserStatus implements Serializable {
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class UserStatus extends BaseUpdatableEntity {
 
-    private static final long serialVersionUID = 1L;
+    @JsonBackReference
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    private User user;
 
-    private UUID id;
-    private Instant createdAt;
-    private Instant updatedAt;
-    private UUID userId;
     private Instant lastSeenAt;
 
-    public UserStatus(UUID userId) {
-        this.id = UUID.randomUUID();
-        this.createdAt = Instant.now();
-        this.userId = userId;
+    public UserStatus(User user) {
+        this.user = user;
         this.lastSeenAt = Instant.now();
     }
 
     public void updateLastSeenTime() {
         this.lastSeenAt = Instant.now();
-        this.updatedAt = Instant.now();
     }
 
-    public boolean isOnline(){
-        return Duration.between(this.lastSeenAt, Instant.now()).toMinutes() < 5;
+    public boolean isOnline() {
+        return lastSeenAt != null
+                && Duration.between(lastSeenAt, Instant.now()).toMinutes() < 5;
+    }
+
+    public void assignUser(User user) {
+        this.user = user;
     }
 }

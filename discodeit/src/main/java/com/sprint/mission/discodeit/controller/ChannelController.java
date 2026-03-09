@@ -2,9 +2,9 @@ package com.sprint.mission.discodeit.controller;
 
 import com.sprint.mission.discodeit.entity.Channel;
 import com.sprint.mission.discodeit.service.ChannelService;
-import com.sprint.mission.discodeit.service.dto.ChannelCreatePrivateRequest;
-import com.sprint.mission.discodeit.service.dto.ChannelCreatePublicRequest;
-import com.sprint.mission.discodeit.service.dto.ChannelUpdateRequest;
+import com.sprint.mission.discodeit.dto.ChannelCreatePrivateRequest;
+import com.sprint.mission.discodeit.dto.ChannelCreatePublicRequest;
+import com.sprint.mission.discodeit.dto.ChannelUpdateRequest;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
