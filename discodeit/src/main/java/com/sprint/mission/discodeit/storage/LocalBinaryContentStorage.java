@@ -1,5 +1,6 @@
 package com.sprint.mission.discodeit.storage;
 
+
 import com.sprint.mission.discodeit.dto.BinaryContentDto;
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
@@ -9,7 +10,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
@@ -17,13 +17,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 @Component
-@ConditionalOnProperty(name = "discodeit.storage.type", havingValue = "local")
 public class LocalBinaryContentStorage implements BinaryContentStorage {
 
     private final Path root;
 
     public LocalBinaryContentStorage(
-            @Value("${discodeit.storage.local.root-path}") String rootPath
+            @Value("${discodeit.storage.local.root-path:./uploads}") String rootPath
     ) {
         this.root = Paths.get(rootPath);
     }
@@ -45,10 +44,10 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     public UUID put(UUID id, byte[] bytes) {
         try {
             Files.write(resolvePath(id), bytes);
+            return id;
         } catch (IOException e) {
             throw new RuntimeException("Failed to store file", e);
         }
-        return id;
     }
 
     @Override
@@ -61,16 +60,17 @@ public class LocalBinaryContentStorage implements BinaryContentStorage {
     }
 
     @Override
-    public ResponseEntity<Resource> download(BinaryContentDto dto) {
+    public ResponseEntity<?> download(BinaryContentDto binaryContentDto) {
         try {
-            InputStream inputStream = get(dto.id());
-
+            InputStream inputStream = get(binaryContentDto.id());
             Resource resource = new InputStreamResource(inputStream);
 
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION,
-                            "attachment; filename=\"" + dto.fileName() + "\"")
-                    .header(HttpHeaders.CONTENT_TYPE, dto.contentType())
+                    .header(
+                            HttpHeaders.CONTENT_DISPOSITION,
+                            "attachment; filename=\"" + binaryContentDto.fileName() + "\""
+                    )
+                    .header(HttpHeaders.CONTENT_TYPE, binaryContentDto.contentType())
                     .body(resource);
 
         } catch (Exception e) {

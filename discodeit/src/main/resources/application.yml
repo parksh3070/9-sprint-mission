@@ -20,14 +20,10 @@ server:
   port: 8080
 
 discodeit:
-  repository:
-    type: jcf
-    file-directory: .discodeit
-    discodeit:
-      storage:
-        type: local
-        local:
-          root-path: ./uploads
+  storage:
+    type: local
+    local:
+      root-path: ./uploads
 
 logging:
   level:
